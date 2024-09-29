@@ -29,4 +29,33 @@ describe("effect", () => {
     expect(foo).toBe(12);
     expect(r).toBe("foo");
   });
+  it("scheduler", () => {
+    //  通过 effect 函数的第二个参数可以给定一个名为 scheduler 的函数。
+    // 在 effect 第一次执行的时候，除了正常的执行逻辑外，还会执行这个给定的 scheduler函数。
+    // 当响应式对象被 set 更新时，不会执行原本的函数，而是执行 scheduler 函数。
+    // 如果执行 runner 的时候，会再次执行原本的函数。
+    let dummy;
+    let run;
+    const scheduler = jest.fn(() => {
+      run = runner;
+    });
+    const obj = reactive({ foo: 1 });
+    const runner = effect(
+      () => {
+        dummy = obj.foo;
+      },
+      { scheduler }
+    );
+    expect(scheduler).not.toHaveBeenCalled();
+    expect(dummy).toBe(1);
+    // should be called on first trigger
+    obj.foo++;
+    expect(scheduler).toHaveBeenCalledTimes(1);
+    // should not run yet
+    expect(dummy).toBe(1);
+    // manually run
+    run();
+    // should have run
+    expect(dummy).toBe(2);
+  });
 });
