@@ -1,5 +1,10 @@
+import { extend } from "../shared";
+
 class ReactiveEffect {
   private _fn: any;
+  deps = [];
+  active = true;
+  onStop?: () => void;
   constructor(fn, public scheduler?) {
     this._fn = fn;
   }
@@ -7,6 +12,22 @@ class ReactiveEffect {
     activeEffect = this;
     return this._fn();
   }
+  stop() {
+    // 避免stop频繁被调用
+    if (this.active) {
+      cleanupEffect(this);
+      if (this.onStop) {
+        this.onStop();
+      }
+      this.active = false;
+    }
+  }
+}
+
+function cleanupEffect(effect) {
+  effect.deps.forEach((dep: any) => {
+    dep.delete(effect);
+  });
 }
 
 const targetMap = new Map();
@@ -21,7 +42,12 @@ export function track(target, key) {
     dep = new Set();
     depsMap.set(key, dep);
   }
+  // 只是Reactive的get触发的track的activeEffect为null
+  // 只有effect触发才有值所以if (!activeEffect) return;
+  if (!activeEffect) return;
   dep.add(activeEffect);
+  // stop反向收集依赖
+  activeEffect.deps.push(dep);
 }
 
 export function trigger(target, key) {
@@ -39,7 +65,15 @@ export function trigger(target, key) {
 let activeEffect;
 export function effect(fn, options: any = {}) {
   // fn
-  const _effect = new ReactiveEffect(fn, options.scheduler);
+  const _effect: any = new ReactiveEffect(fn, options.scheduler);
+  // _effect.onStop = options.onStop;
+  // 后面还有很多类型onStop的属性，使用extend方便继承
+  extend(_effect, options);
   _effect.run();
-  return _effect.run.bind(_effect);
+  const runner: any = _effect.run.bind(_effect);
+  runner.effect = _effect;
+  return runner;
+}
+export function stop(runner) {
+  runner.effect.stop();
 }
