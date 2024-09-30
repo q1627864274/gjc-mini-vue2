@@ -10,6 +10,7 @@ class RefImpl {
   // 只有一个key -> value
   public dep;
   private _rawValue: any;
+  public _v_isRef = true;
   constructor(value) {
     // 传进来对象，保持原始类型，方便set的时候对象对比
     this._rawValue = value;
@@ -22,8 +23,8 @@ class RefImpl {
   get value() {
     trackRefValue(this);
     return this._value;
-  }
-  set value(newValue) {
+  } 
+  set value(newValue) { 
     // newValve -> this.value
     // value一定是要被改变两次不同
     if (hasChanged(newValue, this._rawValue)) {
@@ -32,9 +33,9 @@ class RefImpl {
       this._value = convert(newValue);
       triggerEffects(this.dep);
     }
-  }
+  } 
 }
-// ref包裹的(传过来的value)是不是对象就用reactive
+// ref包裹的(传过来的value)是不是对象就用reactive 
 function convert(value) {
   return isObject(value) ? reactive(value) : value;
 }
@@ -47,3 +48,14 @@ function trackRefValue(ref) {
     trackEffects(ref.dep);
   }
 }
+
+export function isRef(ref) {
+  return !!ref._v_isRef;
+}
+export function unRef(ref) {
+  // 看看是不是一个ref -> ref.value
+  // ref
+  return isRef(ref) ? ref.value : ref;
+}
+
+
