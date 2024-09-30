@@ -59,6 +59,7 @@ export function track(target, key) {
   }
   trackEffects(dep);
 }
+// 方便ref的track
 export function trackEffects(dep) {
   // 不要重复添加deep
   if (dep.has(activeEffect)) return;
@@ -75,9 +76,15 @@ export function isTracking() {
   // 使用变量 shouldTrack
   return shouldTrack && activeEffect !== undefined;
 }
+
 export function trigger(target, key) {
   let depsMap = targetMap.get(target);
   let dep = depsMap.get(key);
+  triggerEffects(dep);
+}
+
+// 方便ref的trigger
+export function triggerEffects(dep) {
   for (const effect of dep) {
     if (effect.scheduler) {
       effect.scheduler();
