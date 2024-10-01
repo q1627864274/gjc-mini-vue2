@@ -1,3 +1,5 @@
+import { h } from "../../lib/guide-mini-vue.esm.js";
+
 export const App = {
   //.vue
   // <template></template>
@@ -9,7 +11,7 @@ export const App = {
   setup: function () {
     // composition api
     return {
-        msg: "mini-vue"
-    }
+      msg: "mini-vue",
+    };
   },
 };

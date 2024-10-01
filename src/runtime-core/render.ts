@@ -22,5 +22,5 @@ function setupRenderEffect(instance: any, container) {
 
   // vnode -> patch
   // vnode -> element -> mountElement
-  patch(subTree, container)
+  patch(subTree, container);
 }
