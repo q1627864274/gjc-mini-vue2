@@ -23,8 +23,8 @@ class RefImpl {
   get value() {
     trackRefValue(this);
     return this._value;
-  } 
-  set value(newValue) { 
+  }
+  set value(newValue) {
     // newValve -> this.value
     // value一定是要被改变两次不同
     if (hasChanged(newValue, this._rawValue)) {
@@ -33,9 +33,9 @@ class RefImpl {
       this._value = convert(newValue);
       triggerEffects(this.dep);
     }
-  } 
+  }
 }
-// ref包裹的(传过来的value)是不是对象就用reactive 
+// ref包裹的(传过来的value)是不是对象就用reactive
 function convert(value) {
   return isObject(value) ? reactive(value) : value;
 }
@@ -58,4 +58,23 @@ export function unRef(ref) {
   return isRef(ref) ? ref.value : ref;
 }
 
+export function proxyRefs(objectWithRefs) {
+  // get -> age(ref) 那么就给他返回.value(自动解构)
+  // not ref 返回本身value
+  return new Proxy(objectWithRefs, {
+    get(target, key) {
+      return unRef(Reflect.get(target, key));
+    },
 
+    // set -> ref  -> .value
+    set(target, key, value) {
+      // ref -> .value覆盖
+      if (isRef(target[key]) && !isRef(value)) {
+        return (target[key].value = value);
+        // not ref  -> 直接覆盖
+      } else {
+        return Reflect.set(target, key, value);
+      }
+    },
+  });
+}
