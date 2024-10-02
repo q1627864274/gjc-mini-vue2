@@ -27,6 +27,10 @@ function setupStatefulComponent(instance) {
         if (key in setupState) {
           return setupState[key];
         }
+        // key -> $el
+        if (key === "$el"){
+          return instance.vnode.el
+        }
       },
     }
   );

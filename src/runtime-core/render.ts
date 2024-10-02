@@ -19,7 +19,7 @@ function processElement(vnode, container) {
 }
 
 function mountElement(vnode, container) {
-  const el = document.createElement(vnode.type);
+  const el = (vnode.el = document.createElement(vnode.type));
 
   // string array
   const { children } = vnode;
@@ -51,14 +51,18 @@ function processComponent(vnode, container) {
 function mountComponent(vnode, container) {
   const instance = createComponentInstance(vnode);
   setupComponent(instance);
-  setupRenderEffect(instance, container);
+  setupRenderEffect(instance, vnode, container);
 }
 
-function setupRenderEffect(instance: any, container) {
+function setupRenderEffect(instance: any, vnode, container) {
   const { proxy } = instance;
   const subTree = instance.render.call(proxy);
 
   // vnode -> patch
   // vnode -> element -> mountElement
   patch(subTree, container);
+
+  // element ->  mount
+  // 所有的element都运行完了
+  vnode.el = subTree.el;
 }

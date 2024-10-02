@@ -1,10 +1,12 @@
 import { h } from "../../lib/guide-mini-vue.esm.js";
 
+window.self = null
 export const App = {
   //.vue
   // <template></template>
   // / render
   render() {
+    window.self = this
     // / ui
     return h(
       "div",
